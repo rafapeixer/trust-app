@@ -86,10 +86,7 @@ export default function Quotation() {
     <Card className={styles.card}>
       <CardContent className={styles.cardContent}>
         <div className={styles.flexCenter}>
-          {isLoading && <p>Carregando...</p>}
-          {error && <p className={styles.errorText}>{error}</p>}
-          {!isLoading && !error && (
-            <>
+             <>
               <Image src="/2.png" alt="Trust Intermediações" width={240} height={80} className={styles.image} />
               <h1 className={styles.title}>Cotação em tempo real</h1>
               <h2 className={styles.subtitle}>Usdt da maneira mais fácil.</h2>
@@ -138,7 +135,6 @@ export default function Quotation() {
                 </CardContent>
               </Card>
             </>
-          )}
         </div>
       </CardContent>
     </Card>
