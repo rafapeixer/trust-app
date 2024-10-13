@@ -1,8 +1,8 @@
 /* Estilos principais do card */
 .card {
   width: 100%;
-  max-width: 34rem; /* Equivalente a max-w-2xl no Tailwind */
-  margin: 0 auto;
+  max-width: 38rem; /* Equivalente a max-w-2xl no Tailwind */
+  margin: auto;
   background-color: #5a2cff;
   color: rgb(255, 255, 255);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -11,8 +11,8 @@
 
 /* Estilos do conteúdo do card */
 .cardContent {
-  padding: 2rem;
-  margin: 2rem;
+  padding: 1.5rem;
+  margin: 1.5rem;
 }
 
 /* Container para elementos centralizados */
@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem; /* Equivalente a gap-6 */
+  gap: 0.5rem; /* Equivalente a gap-6 */
 }
 
 /* Estilo da imagem */
@@ -95,7 +95,7 @@
 }
 
 .cardQuotationContent {
-  padding: 1.5rem;
+  padding: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
