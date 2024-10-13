@@ -111,10 +111,29 @@ export default function Quotation() {
                   onChange={onSpreadChange}
                   placeholder="0.5"
                   defaultValue="0"
+                  onKeyDown={(e) => {
+                    // Permitir números, backspace, tab, delete, setas, e ponto
+                    if (
+                      (e.key >= '0' && e.key <= '9') ||
+                      e.key === 'Backspace' ||
+                      e.key === 'Tab' ||
+                      e.key === 'Delete' ||
+                      e.key === 'ArrowLeft' ||
+                      e.key === 'ArrowRight' ||
+                      e.key === '.'
+                    ) {
+                      return;
+                    }
+                    // Impedir a vírgula
+                    if (e.key === ',') {
+                      e.preventDefault();
+                    }
+                    // Impedir qualquer outra tecla
+                    e.preventDefault();
+                  }}
                 />
               </div>
             </div>
-
             <Card className={styles.cardQuotation}>
               <CardContent className={styles.cardQuotationContent}>
                 <div>
