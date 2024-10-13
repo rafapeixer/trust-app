@@ -1,9 +1,9 @@
 /* Estilos principais do card */
 .card {
   width: 100%;
-  max-width: 36rem; /* Equivalente a max-w-2xl no Tailwind */
+  max-width: 34rem; /* Equivalente a max-w-2xl no Tailwind */
   margin: 0 auto;
-  background-color: #6c44fd;
+  background-color: #5a2cff;
   color: rgb(255, 255, 255);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: none;
@@ -42,13 +42,6 @@
   font-size: 1.25rem; /* text-xl */
   margin-bottom: 1.5rem; /* mb-6 */
   color: #d3bdfd; /* text-purple-100 */
-}
-
-/* Estilo dos badges */
-.badgeLoading {
-  background-color: white;
-  color: #6c44fd;
-  animation: pulse 1.5s infinite;
 }
 
 .badgeError {
@@ -121,7 +114,7 @@
 
 /* Estilo do botão com ícone de copiar */
 .copyButton {
-  background-color: #6c44fd;
+  background-color: #0b9706;
   color: white;
   border: none;
   padding: 0.5rem;
@@ -130,5 +123,5 @@
 }
 
 .copyButton:hover {
-  background-color: #805ad5; /* roxo mais escuro */
+  background-color: #6c44fd; /* roxo mais escuro */
 }
