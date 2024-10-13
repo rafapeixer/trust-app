@@ -1,0 +1,134 @@
+/* Estilos principais do card */
+.card {
+  width: 100%;
+  max-width: 36rem; /* Equivalente a max-w-2xl no Tailwind */
+  margin: 0 auto;
+  background-color: #6c44fd;
+  color: rgb(255, 255, 255);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+/* Estilos do conteúdo do card */
+.cardContent {
+  padding: 2rem;
+  margin: 2rem;
+}
+
+/* Container para elementos centralizados */
+.flexCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem; /* Equivalente a gap-6 */
+}
+
+/* Estilo da imagem */
+.image {
+  margin-bottom: 0rem; /* mb-4 no Tailwind */
+}
+
+/* Estilo do título principal */
+.title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: bold;
+  background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, white, #e0c3fc); /* gradiente de branco a roxo-claro */
+}
+
+/* Estilo do subtítulo */
+.subtitle {
+  font-size: 1.25rem; /* text-xl */
+  margin-bottom: 1.5rem; /* mb-6 */
+  color: #d3bdfd; /* text-purple-100 */
+}
+
+/* Estilo dos badges */
+.badgeLoading {
+  background-color: white;
+  color: #6c44fd;
+  animation: pulse 1.5s infinite;
+}
+
+.badgeError {
+  background-color: #f56565; /* bg-red-500 */
+  color: white;
+}
+
+/* Animação de carregamento (pulse) */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Estilos dos inputs */
+.inputWrapper {
+  width: 100%;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.inputLabel {
+  color: #ffffff; /* text-purple-100 */
+}
+
+.inputIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c44fd;
+}
+
+.inputField {
+  padding-left: 2.5rem; /* pl-10 */
+  background-color: white;
+  border: 1px solid #d6bbfc; /* border-purple-300 */
+  color: #6c44fd;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.375rem; /* Rounded border */
+}
+
+/* Estilo do card que mostra o valor */
+.cardQuotation {
+  width: 100%;
+  background-color: white;
+}
+
+.cardQuotationContent {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Estilo do texto no card */
+.cardQuotationLabel {
+  color: #6c44fd;
+}
+
+.cardQuotationValue {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: bold;
+  color: #6c44fd;
+}
+
+/* Estilo do botão com ícone de copiar */
+.copyButton {
+  background-color: #6c44fd;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.copyButton:hover {
+  background-color: #805ad5; /* roxo mais escuro */
+}

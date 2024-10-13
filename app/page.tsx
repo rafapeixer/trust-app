@@ -1,101 +1,146 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { ClipboardIcon, DollarSignIcon, PercentIcon, WalletIcon } from "lucide-react"
+import { debounce } from "@/utils/utils"
+import styles from './cotacao.module.css'
+
+interface BinanceResponse {
+  symbol: string
+  price: string
+}
+
+export default function Quotation() {
+  const [result, setResult] = useState<BinanceResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [calculatedValue, setCalculatedValue] = useState<number | undefined>()
+  const [copied, setCopied] = useState(false)
+  const spreadRef = useRef<HTMLInputElement>(null)
+
+  const fetchCotacao = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL")
+      const data: BinanceResponse = await response.json()
+      setResult(data)
+      setError(null)
+    } catch (err) {
+      setError("Erro ao buscar cotação")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchCotacao()
+    const interval = setInterval(fetchCotacao, 3000) // Update every 3 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
+    const spread = Number(event?.target?.value || actualValue)
+    const currentPrice = result ? parseFloat(result.price) : 0
+
+    if (!Number.isNaN(spread)) {
+      setCalculatedValue(currentPrice * (1 + spread / 100))
+    } else {
+      setCalculatedValue(currentPrice)
+    }
+  }, 800)
+
+  function roundToDecimalPlaces(number: number) {
+    const factor = Math.pow(10, 4)
+    return Math.round(number * factor) / factor
+  }
+
+  async function copyValueToClipBoard() {
+    setCopied(true)
+    const actualValue = roundToDecimalPlaces(Number(calculatedValue || (result ? parseFloat(result.price) : 0)))
+    await navigator?.clipboard?.writeText(actualValue?.toString())
+
+    setTimeout(() => {
+      setCopied(false)
+    }, 2000)
+  }
+
+  useEffect(() => {
+    const currentSpread = spreadRef?.current?.value
+    onSpreadChange({ target: { value: currentSpread } } as React.ChangeEvent<HTMLInputElement>, Number(currentSpread))
+  }, [result])
+
+  const formatedPrice = result ? parseFloat(result.price) : 0
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Card className={styles.card}>
+  <CardContent className={styles.cardContent}>
+    <div className={styles.flexCenter}>
+      <Image src="/2.png" alt="Trust Intermediações" width={240} height={80} className={styles.image} />
+      <h1 className={styles.title}>Cotação em tempo real</h1>
+      <h2 className={styles.subtitle}>Usdt da maneira mais fácil.</h2>
+      {isLoading && <Badge variant="secondary" className={styles.badgeLoading}>Carregando...</Badge>}
+      {error && <Badge variant="destructive" className={styles.badgeError}>{error}</Badge>}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className={styles.inputWrapper}>
+        <Label htmlFor="currency" className={styles.inputLabel}>Moeda</Label>
+        <div className="relative">
+
+          <Input id="currency" className={styles.inputField} value="Tether (USDT)" disabled />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className={styles.inputWrapper}>
+        <Label htmlFor="quotation" className={styles.inputLabel}>Cotação</Label>
+        <div className="relative">
+
+          <Input id="quotation" className={styles.inputField} value={formatedPrice.toFixed(4)} disabled />
+        </div>
+      </div>
+
+      <div className={styles.inputWrapper}>
+        <Label htmlFor="spread" className={styles.inputLabel}>Spread (%)</Label>
+        <div className="relative">
+
+          <Input id="spread" ref={spreadRef} className={styles.inputField} onChange={onSpreadChange} placeholder="0.5" />
+        </div>
+      </div>
+
+      <Card className={styles.cardQuotation}>
+        <CardContent className={styles.cardQuotationContent}>
+          <div>
+            <Label className={styles.cardQuotationLabel}>USDT Price</Label>
+            <p className={styles.cardQuotationValue}>
+              R$ {(calculatedValue || formatedPrice).toFixed(4)}
+            </p>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button className={styles.copyButton} onClick={copyValueToClipBoard}>
+                  <ClipboardIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{copied ? "Copiado!" : "Copiar"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </CardContent>
+      </Card>
     </div>
-  );
+  </CardContent>
+</Card>
+  )
 }
