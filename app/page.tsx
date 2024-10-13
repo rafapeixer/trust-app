@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -49,7 +49,7 @@ export default function Quotation() {
     return () => clearInterval(interval)
   }, [])
 
-  const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
+  const onSpreadChange = useCallback(debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
     const spread = Number(event?.target?.value || actualValue)
     const currentPrice = result ? parseFloat(result.price) : 0
 
@@ -58,7 +58,7 @@ export default function Quotation() {
     } else {
       setCalculatedValue(currentPrice)
     }
-  }, 800)
+  }, 800), [result])
 
   function roundToDecimalPlaces(number: number) {
     const factor = Math.pow(10, 4)
@@ -78,67 +78,69 @@ export default function Quotation() {
   useEffect(() => {
     const currentSpread = spreadRef?.current?.value
     onSpreadChange({ target: { value: currentSpread } } as React.ChangeEvent<HTMLInputElement>, Number(currentSpread))
-  }, [result])
+  }, [result, onSpreadChange])
 
   const formatedPrice = result ? parseFloat(result.price) : 0
 
   return (
     <Card className={styles.card}>
-  <CardContent className={styles.cardContent}>
-    <div className={styles.flexCenter}>
-      <Image src="/2.png" alt="Trust Intermediações" width={240} height={80} className={styles.image} />
-      <h1 className={styles.title}>Cotação em tempo real</h1>
-      <h2 className={styles.subtitle}>Usdt da maneira mais fácil.</h2>
+      <CardContent className={styles.cardContent}>
+        <div className={styles.flexCenter}>
+          {isLoading && <p>Carregando...</p>}
+          {error && <p className={styles.errorText}>{error}</p>}
+          {!isLoading && !error && (
+            <>
+              <Image src="/2.png" alt="Trust Intermediações" width={240} height={80} className={styles.image} />
+              <h1 className={styles.title}>Cotação em tempo real</h1>
+              <h2 className={styles.subtitle}>Usdt da maneira mais fácil.</h2>
 
+              <div className={styles.inputWrapper}>
+                <Label htmlFor="currency" className={styles.inputLabel}>Moeda</Label>
+                <div className="relative">
+                  <Input id="currency" className={styles.inputField} value="Tether (USDT)" disabled />
+                </div>
+              </div>
 
-      <div className={styles.inputWrapper}>
-        <Label htmlFor="currency" className={styles.inputLabel}>Moeda</Label>
-        <div className="relative">
+              <div className={styles.inputWrapper}>
+                <Label htmlFor="quotation" className={styles.inputLabel}>Cotação</Label>
+                <div className="relative">
+                  <Input id="quotation" className={styles.inputField} value={formatedPrice.toFixed(4)} disabled />
+                </div>
+              </div>
 
-          <Input id="currency" className={styles.inputField} value="Tether (USDT)" disabled />
+              <div className={styles.inputWrapper}>
+                <Label htmlFor="spread" className={styles.inputLabel}>Spread (%)</Label>
+                <div className="relative">
+                  <Input id="spread" ref={spreadRef} className={styles.inputField} onChange={onSpreadChange} placeholder="0.5" />
+                </div>
+              </div>
+
+              <Card className={styles.cardQuotation}>
+                <CardContent className={styles.cardQuotationContent}>
+                  <div>
+                    <Label className={styles.cardQuotationLabel}>USDT Price</Label>
+                    <p className={styles.cardQuotationValue}>
+                      R$ {(calculatedValue || formatedPrice).toFixed(4)}
+                    </p>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button className={styles.copyButton} onClick={copyValueToClipBoard}>
+                          <ClipboardIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{copied ? "Copiado!" : "Copiar"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
-      </div>
-
-      <div className={styles.inputWrapper}>
-        <Label htmlFor="quotation" className={styles.inputLabel}>Cotação</Label>
-        <div className="relative">
-
-          <Input id="quotation" className={styles.inputField} value={formatedPrice.toFixed(4)} disabled />
-        </div>
-      </div>
-
-      <div className={styles.inputWrapper}>
-        <Label htmlFor="spread" className={styles.inputLabel}>Spread (%)</Label>
-        <div className="relative">
-
-          <Input id="spread" ref={spreadRef} className={styles.inputField} onChange={onSpreadChange} placeholder="0.5" />
-        </div>
-      </div>
-
-      <Card className={styles.cardQuotation}>
-        <CardContent className={styles.cardQuotationContent}>
-          <div>
-            <Label className={styles.cardQuotationLabel}>USDT Price</Label>
-            <p className={styles.cardQuotationValue}>
-              R$ {(calculatedValue || formatedPrice).toFixed(4)}
-            </p>
-          </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button className={styles.copyButton} onClick={copyValueToClipBoard}>
-                  <ClipboardIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{copied ? "Copiado!" : "Copiar"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </CardContent>
-      </Card>
-    </div>
-  </CardContent>
-</Card>
+      </CardContent>
+    </Card>
   )
 }
