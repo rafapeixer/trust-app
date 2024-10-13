@@ -29,25 +29,31 @@ export default function Quotation() {
   const [copied, setCopied] = useState(false)
   const spreadRef = useRef<HTMLInputElement>(null)
 
-  const fetchCotacao = async () => {
+  const fetchCotacao = async (initialLoad = false) => {
     try {
-      setIsLoading(true)
-      const response = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL")
-      const data: BinanceResponse = await response.json()
-      setResult(data)
-      setError(null)
+      if (initialLoad) setIsLoading(true);
+      const response = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL");
+      const data: BinanceResponse = await response.json();
+      
+      if (result?.price !== data.price) {
+        setResult(data);
+      }
+      setError(null);
     } catch (err) {
-      setError("Erro ao buscar cotação")
+      console.error(err);
+      setError("Erro ao buscar cotação");
     } finally {
-      setIsLoading(false)
+      if (initialLoad) setIsLoading(false);
     }
-  }
-
+  };
+  
   useEffect(() => {
-    fetchCotacao()
-    const interval = setInterval(fetchCotacao, 3000)
-    return () => clearInterval(interval)
-  }, [])
+    fetchCotacao(true); // Chamada inicial com isLoading
+    const interval = setInterval(fetchCotacao, 3000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
 
   const onSpreadChange = useCallback(debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
     const spread = Number(event?.target?.value || actualValue)
