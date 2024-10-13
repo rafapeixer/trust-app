@@ -90,8 +90,7 @@ export default function Quotation() {
       <Image src="/2.png" alt="Trust Intermediações" width={240} height={80} className={styles.image} />
       <h1 className={styles.title}>Cotação em tempo real</h1>
       <h2 className={styles.subtitle}>Usdt da maneira mais fácil.</h2>
-      {isLoading && <Badge variant="secondary" className={styles.badgeLoading}>Carregando...</Badge>}
-      {error && <Badge variant="destructive" className={styles.badgeError}>{error}</Badge>}
+
 
       <div className={styles.inputWrapper}>
         <Label htmlFor="currency" className={styles.inputLabel}>Moeda</Label>
