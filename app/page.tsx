@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -13,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ClipboardIcon, DollarSignIcon, PercentIcon, WalletIcon } from "lucide-react"
+import { ClipboardIcon } from "lucide-react"
 import { debounce } from "@/utils/utils"
 import styles from './cotacao.module.css'
 
@@ -46,7 +45,7 @@ export default function Quotation() {
 
   useEffect(() => {
     fetchCotacao()
-    const interval = setInterval(fetchCotacao, 3000) // Update every 3 seconds
+    const interval = setInterval(fetchCotacao, 3000)
     return () => clearInterval(interval)
   }, [])
 
