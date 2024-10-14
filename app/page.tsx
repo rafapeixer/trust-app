@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation" // Use useSearchParams para acessar os parâmetros da URL
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,10 +26,19 @@ export default function Quotation() {
   const [result, setResult] = useState<BinanceResponse | null>(null)
   const [calculatedValue, setCalculatedValue] = useState<number | undefined>()
   const [copied, setCopied] = useState(false)
+  const [mounted, setMounted] = useState(false) // Adiciona um estado para verificar se o componente foi montado
   const spreadRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<BinanceResponse | null>(null)
+  const searchParams = useSearchParams() // Hook para acessar os parâmetros da URL
 
-  const fetchCotacao = useCallback(async () => {
+  useEffect(() => {
+    setMounted(true) // Marca o componente como montado
+  }, [])
+
+  // Captura o spread da URL somente se estiver disponível
+  const spreadQuery = mounted && searchParams.get("spread") ? Number(searchParams.get("spread")) : 0
+
+  const fetchCotacao = async () => {
     try {
       const response = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL")
       const data: BinanceResponse = await response.json()
@@ -37,13 +47,13 @@ export default function Quotation() {
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }
 
   useEffect(() => {
     fetchCotacao();
     const interval = setInterval(fetchCotacao, 3000);
     return () => clearInterval(interval);
-  }, [fetchCotacao]);
+  }, []);
 
   const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
     const spread = Number(event?.target?.value || actualValue || 0)
@@ -71,10 +81,13 @@ export default function Quotation() {
     }, 2000)
   }
 
+  // Preenche o valor de spread baseado na query da URL após a montagem
   useEffect(() => {
-    const currentSpread = spreadRef?.current?.value
-    onSpreadChange({ target: { value: currentSpread } } as React.ChangeEvent<HTMLInputElement>, Number(currentSpread))
-  }, [result])
+    if (mounted && spreadRef?.current && spreadQuery) {
+      spreadRef.current.value = spreadQuery.toString();
+      onSpreadChange({ target: { value: spreadQuery.toString() } } as React.ChangeEvent<HTMLInputElement>, spreadQuery)
+    }
+  }, [mounted, spreadQuery, onSpreadChange]);
 
   const formatedPrice = result ? parseFloat(result.price) : 0
 
@@ -110,30 +123,11 @@ export default function Quotation() {
                   className={styles.inputField}
                   onChange={onSpreadChange}
                   placeholder="0.5"
-                  defaultValue="0"
-                  onKeyDown={(e) => {
-                    // Permitir números, backspace, tab, delete, setas, e ponto
-                    if (
-                      (e.key >= '0' && e.key <= '9') ||
-                      e.key === 'Backspace' ||
-                      e.key === 'Tab' ||
-                      e.key === 'Delete' ||
-                      e.key === 'ArrowLeft' ||
-                      e.key === 'ArrowRight' ||
-                      e.key === '.'
-                    ) {
-                      return;
-                    }
-                    // Impedir a vírgula
-                    if (e.key === ',') {
-                      e.preventDefault();
-                    }
-                    // Impedir qualquer outra tecla
-                    e.preventDefault();
-                  }}
+                  defaultValue={spreadQuery.toString()} // Preenche com o valor da query
                 />
               </div>
             </div>
+
             <Card className={styles.cardQuotation}>
               <CardContent className={styles.cardQuotationContent}>
                 <div>
