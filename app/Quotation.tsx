@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation" // Adicionando o useRouter para manipular a URL
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,12 +33,13 @@ export default function Quotation() {
   const spreadRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<CapitualResponse | null>(null)
   const searchParams = useSearchParams()
+  const router = useRouter() // Hook para manipular a URL
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Executa somente após o componente estar montado
+  // Pega o valor do spread da URL ou usa 0 como padrão
   const spreadQuery = mounted && searchParams ? Number(searchParams.get("spread")) || 0 : 0
 
   const fetchCotacao = async () => {
@@ -52,46 +53,67 @@ export default function Quotation() {
     }
   }
 
+  // Atualiza a cotação a cada 3 segundos
   useEffect(() => {
     fetchCotacao();
     const interval = setInterval(fetchCotacao, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>, actualValue?: number) => {
-    const spread = Number(event?.target?.value || actualValue || 0)
-    const currentPrice = resultRef.current ? parseFloat(resultRef.current.data.fxRate) : 0
-
+  // Função para calcular o valor baseado no spread e cotação atual
+  const calculateValue = (spread: number, currentPrice: number) => {
     if (!Number.isNaN(spread)) {
-      setCalculatedValue(currentPrice * (1 + spread / 100))
+      setCalculatedValue(currentPrice * (1 + spread / 100));
     } else {
-      setCalculatedValue(currentPrice)
+      setCalculatedValue(currentPrice);
     }
+  };
+
+  // Recalcula o spread e atualiza a URL quando o usuário modifica o spread
+  const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const spread = Number(event?.target?.value || 0);
+    const currentPrice = resultRef.current ? parseFloat(resultRef.current.data.fxRate) : 0;
+
+    // Atualiza a URL com o novo valor de spread
+    router.push(`/?spread=${spread}`, undefined, { shallow: true });
+
+    // Recalcula o valor com o spread
+    calculateValue(spread, currentPrice);
   }, 800);
 
+  // Atualiza o valor sempre que a cotação ou o spread mudar
+  useEffect(() => {
+    if (resultRef.current) {
+      const currentPrice = parseFloat(resultRef.current.data.fxRate);
+      calculateValue(spreadQuery, currentPrice); // Recalcula o valor ao mudar cotação ou spread
+    }
+  }, [spreadQuery, result]); // Dispara quando o spread ou a cotação mudam
+
   function roundToDecimalPlaces(number: number) {
-    const factor = Math.pow(10, 4)
-    return Math.round(number * factor) / factor
+    const factor = Math.pow(10, 4);
+    return Math.round(number * factor) / factor;
   }
 
   async function copyValueToClipBoard() {
-    setCopied(true)
-    const actualValue = roundToDecimalPlaces(Number(calculatedValue || (result ? parseFloat(result.data.fxRate) : 0)))
-    await navigator?.clipboard?.writeText(actualValue?.toString())
+    setCopied(true);
+    const actualValue = roundToDecimalPlaces(Number(calculatedValue || (result ? parseFloat(result.data.fxRate) : 0)));
+    await navigator?.clipboard?.writeText(actualValue?.toString());
 
     setTimeout(() => {
-      setCopied(false)
-    }, 2000)
+      setCopied(false);
+    }, 2000);
   }
 
+  // Atualiza o input de spread com o valor da URL na primeira renderização
   useEffect(() => {
     if (mounted && spreadRef?.current && spreadQuery) {
       spreadRef.current.value = spreadQuery.toString();
-      onSpreadChange({ target: { value: spreadQuery.toString() } } as React.ChangeEvent<HTMLInputElement>, spreadQuery)
+      const currentPrice = resultRef.current ? parseFloat(resultRef.current.data.fxRate) : 0;
+      calculateValue(spreadQuery, currentPrice);
     }
-  }, [mounted, spreadQuery, onSpreadChange]);
+  }, [mounted, spreadQuery]);
 
-  const formatedPrice = result ? parseFloat(result.data.fxRate) : 0
+  const formatedPrice = result ? parseFloat(result.data.fxRate) : 0;
 
   return (
     <Card className={styles.card}>
@@ -135,7 +157,7 @@ export default function Quotation() {
                 <div>
                   <Label className={styles.cardQuotationLabel}>USDT Price</Label>
                   <p className={styles.cardQuotationValue}>
-                    R$ {(calculatedValue || formatedPrice).toFixed(4)}
+                    R$ {(calculatedValue || formatedPrice).toFixed(4)} {/* Aqui o valor é recalculado */}
                   </p>
                 </div>
                 <TooltipProvider>
@@ -156,5 +178,5 @@ export default function Quotation() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
