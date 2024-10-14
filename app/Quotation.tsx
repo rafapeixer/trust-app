@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { useSearchParams, useRouter } from "next/navigation" // Adicionando o useRouter para manipular a URL
+import { useSearchParams, useRouter } from "next/navigation" // Importar useSearchParams e useNavigate
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,13 +33,12 @@ export default function Quotation() {
   const spreadRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<CapitualResponse | null>(null)
   const searchParams = useSearchParams()
-  const router = useRouter() // Hook para manipular a URL
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Pega o valor do spread da URL ou usa 0 como padrão
   const spreadQuery = mounted && searchParams ? Number(searchParams.get("spread")) || 0 : 0
 
   const fetchCotacao = async () => {
@@ -53,14 +52,12 @@ export default function Quotation() {
     }
   }
 
-  // Atualiza a cotação a cada 3 segundos
   useEffect(() => {
     fetchCotacao();
     const interval = setInterval(fetchCotacao, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  // Função para calcular o valor baseado no spread e cotação atual
   const calculateValue = (spread: number, currentPrice: number) => {
     if (!Number.isNaN(spread)) {
       setCalculatedValue(currentPrice * (1 + spread / 100));
@@ -69,25 +66,24 @@ export default function Quotation() {
     }
   };
 
-  // Recalcula o spread e atualiza a URL quando o usuário modifica o spread
   const onSpreadChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     const spread = Number(event?.target?.value || 0);
     const currentPrice = resultRef.current ? parseFloat(resultRef.current.data.fxRate) : 0;
 
-    // Atualiza a URL com o novo valor de spread
-    router.push(`/?spread=${spread}`, undefined, { shallow: true });
+    if (router) {
+      // Atualiza a URL com o novo valor de spread
+      router.push(`/?spread=${spread}`); // Remover shallow
+    }
 
-    // Recalcula o valor com o spread
     calculateValue(spread, currentPrice);
   }, 800);
 
-  // Atualiza o valor sempre que a cotação ou o spread mudar
   useEffect(() => {
     if (resultRef.current) {
       const currentPrice = parseFloat(resultRef.current.data.fxRate);
-      calculateValue(spreadQuery, currentPrice); // Recalcula o valor ao mudar cotação ou spread
+      calculateValue(spreadQuery, currentPrice);
     }
-  }, [spreadQuery, result]); // Dispara quando o spread ou a cotação mudam
+  }, [spreadQuery, result]);
 
   function roundToDecimalPlaces(number: number) {
     const factor = Math.pow(10, 4);
@@ -104,7 +100,6 @@ export default function Quotation() {
     }, 2000);
   }
 
-  // Atualiza o input de spread com o valor da URL na primeira renderização
   useEffect(() => {
     if (mounted && spreadRef?.current && spreadQuery) {
       spreadRef.current.value = spreadQuery.toString();
